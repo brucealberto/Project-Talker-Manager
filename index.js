@@ -1,8 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-// const fs = require('fs/promises');
+const fs = require('fs/promises');
 const crypto = require('crypto');
-const talker = require('./talker.json');
+// const talker = require('./talker.json');
 
 const app = express();
 app.use(bodyParser.json());
@@ -15,18 +15,23 @@ app.get('/', (_request, response) => {
   response.status(HTTP_OK_STATUS).send();
 });
 
-app.get('/talker', (req, res) => 
-  //  if (!talker) res.status(200).send([]);
-   res.status(200).json(talker));
+// app.get('/talker', (req, res) => 
+//   //  if (!talker) res.status(200).send([]);
+//    res.status(200).json(talker));
 
-// app.get('/talker', async (req, res) => {
-//   const talkers = await fs.readFile('./talker.json');
-//   return res.status(200).json(talkers);
-// });
+app.get('/talker', async (req, res) => {
+  try {
+    const talkers = await fs.readFile('./talker.json');
+  return res.status(200).json(JSON.parse(talkers));
+  } catch (error) {
+    return res.status(500).end();
+  }
+});
 
-app.get('/talker/:id', (req, res) => {
+app.get('/talker/:id', async (req, res) => {
   const { id } = req.params;
-  const findId = talker.find((tal) => tal.id === +id);
+  const talkers = await fs.readFile('./talker.json');
+  const findId = JSON.parse(talkers).find((tal) => tal.id === +id);
   if (findId < 0 || !findId) {
  return res
       .status(404)
