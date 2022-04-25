@@ -2,6 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs/promises');
 const crypto = require('crypto');
+const verifyEmail = require('./middlewares/verifyEmail');
+const verifyPassword = require('./middlewares/verifyPassword');
 // const talker = require('./talker.json');
 
 const app = express();
@@ -40,9 +42,9 @@ app.get('/talker/:id', async (req, res) => {
   return res.status(200).json(findId);
 });
 
-app.post('/login', (req, res) => {
+app.post('/login', verifyEmail, verifyPassword, (req, res) => {
   // const { token } = req.headers;
-  // const { email, password } = req.body;
+  
   const generateToken = crypto.randomBytes(8).toString('hex');
   return res.status(200).json({ token: generateToken });
 });
@@ -50,3 +52,18 @@ app.post('/login', (req, res) => {
 app.listen(PORT, () => {
   console.log('Online');
 });
+
+/**
+ *   const { email, password } = req.body;
+  switch (email && password) {
+    case !email:
+      return res.status(400).json({ message: 'O campo "email" é obrigatório' });
+    case !email.includes('@', '.com'):
+      return res.status(400).json({ message: 'O "email" deve ter o formato "email@email.com"' });
+    case !password: 
+      return res.status(400).json({ message: 'O campo "password" é obrigatório' });
+    case password.length < 6:
+      return 
+    default:
+      break;
+ */
