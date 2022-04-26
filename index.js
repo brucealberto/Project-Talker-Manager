@@ -11,7 +11,7 @@ const verifyTalk = require('./middlewares/verifyTalk');
 const verifyRate = require('./middlewares/verifyRate');
 const verifyDate = require('./middlewares/verifyDate');
 // const talker = require('./talker.json');
-
+const PATHTALKER = './talker.json';
 const app = express();
 app.use(bodyParser.json());
 
@@ -29,7 +29,7 @@ app.get('/', (_request, response) => {
 
 app.get('/talker', async (req, res) => {
   try {
-    const talkers = await fs.readFile('./talker.json');
+    const talkers = await fs.readFile(PATHTALKER);
     return res.status(200).json(JSON.parse(talkers));
   } catch (error) {
     return res.status(500).end();
@@ -38,7 +38,7 @@ app.get('/talker', async (req, res) => {
 
 app.get('/talker/:id', async (req, res) => {
   const { id } = req.params;
-  const talkers = await fs.readFile('./talker.json');
+  const talkers = await fs.readFile(PATHTALKER);
   const findId = JSON.parse(talkers).find((tal) => tal.id === +id);
   if (findId < 0 || !findId) {
     return res
@@ -64,13 +64,41 @@ app.post(
   verifyRate,
   verifyDate,
   async (req, res) => {
-    const { name, age, talk: { watchedAt, rate } } = req.body;
-     const talkers = await fs.readFile('./talker.json', 'utf-8');
-     const talkParse = JSON.parse(talkers);
-     const talkObj = { id: talkParse.length + 1, name, age, talk: { watchedAt, rate } };
-     const allTalkers = [...talkParse, talkObj];
-     fs.writeFile('./talker.json', JSON.stringify(allTalkers));
+    const {
+      name,
+      age,
+      talk: { watchedAt, rate },
+    } = req.body;
+    const talkers = await fs.readFile(PATHTALKER, 'utf-8');
+    const talkParse = JSON.parse(talkers);
+    const talkObj = {
+      id: talkParse.length + 1,
+      name,
+      age,
+      talk: { watchedAt, rate },
+    };
+    const allTalkers = [...talkParse, talkObj];
+    fs.writeFile(PATHTALKER, JSON.stringify(allTalkers));
     return res.status(201).json(talkObj);
+  },
+);
+
+app.put(
+  '/talker/:id',
+  authorizationMddl,
+  verifyName,
+  verifyAge,
+  verifyTalk,
+  verifyRate,
+  verifyDate,
+  async ({ body, params }, res) => {
+    const { id } = params;
+    const readTalkers = JSON.parse(await fs.readFile('./talker.json'));
+    const findIndex = readTalkers.findIndex((fin) => fin.id === +id);
+      readTalkers[findIndex] = { id: +id, ...body };
+      await fs.writeFile(PATHTALKER, JSON.stringify(readTalkers));
+    
+    return res.status(200).json(readTalkers[findIndex]);
   },
 );
 
@@ -91,4 +119,17 @@ app.listen(PORT, () => {
       return 
     default:
       breae23e23k;
+
+      const { id } = req.params;
+    // const { name, age, talk: { watchedAt, rate } } = req.body;
+    // fs.readFile(PATHTALKER).then(async (resp) => {
+    //   const talkers = JSON.parse(resp);
+    //   const talkObj = {
+    //     name, age, talk: { watchedAt, rate },
+    //   };
+    //   const findTalkerIndex = talkers.findIndex((talk) => talk.id === +id);
+    //   talkers[findTalkerIndex] = { id: +id, ...talkObj };
+    //   await fs.writeFile(PATHTALKER, talkers);
+    //   return res.status(200).json(talkers[findTalkerIndex]);
+   
  */
