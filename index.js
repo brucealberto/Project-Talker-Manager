@@ -10,8 +10,9 @@ const verifyAge = require('./middlewares/verifyAge');
 const verifyTalk = require('./middlewares/verifyTalk');
 const verifyRate = require('./middlewares/verifyRate');
 const verifyDate = require('./middlewares/verifyDate');
-// const talker = require('./talker.json');
+
 const PATHTALKER = './talker.json';
+
 const app = express();
 app.use(bodyParser.json());
 
@@ -22,10 +23,6 @@ const PORT = '3000';
 app.get('/', (_request, response) => {
   response.status(HTTP_OK_STATUS).send();
 });
-
-// app.get('/talker', (req, res) =>
-//   //  if (!talker) res.status(200).send([]);
-//    res.status(200).json(talker));
 
 app.get('/talker', async (req, res) => {
   try {
@@ -49,8 +46,6 @@ app.get('/talker/:id', async (req, res) => {
 });
 
 app.post('/login', verifyEmail, verifyPassword, (req, res) => {
-  // const { token } = req.headers;
-
   const generateToken = crypto.randomBytes(8).toString('hex');
   return res.status(200).json({ token: generateToken });
 });
@@ -93,43 +88,23 @@ app.put(
   verifyDate,
   async ({ body, params }, res) => {
     const { id } = params;
-    const readTalkers = JSON.parse(await fs.readFile('./talker.json'));
+    const readTalkers = JSON.parse(await fs.readFile(PATHTALKER));
     const findIndex = readTalkers.findIndex((fin) => fin.id === +id);
-      readTalkers[findIndex] = { id: +id, ...body };
-      await fs.writeFile(PATHTALKER, JSON.stringify(readTalkers));
-    
+    readTalkers[findIndex] = { id: +id, ...body };
+    await fs.writeFile(PATHTALKER, JSON.stringify(readTalkers));
     return res.status(200).json(readTalkers[findIndex]);
   },
 );
 
+app.delete('/talker/:id', authorizationMddl, async ({ params }, res) => {
+  const { id } = params;
+  const readTalkers = JSON.parse(await fs.readFile(PATHTALKER));
+  const findIndex = readTalkers.findIndex((fin) => fin.id === +id);
+  readTalkers.splice(findIndex, 1);
+  await fs.writeFile(PATHTALKER, JSON.stringify(readTalkers));
+  return res.status(204).json(readTalkers[findIndex]);
+});
+
 app.listen(PORT, () => {
   console.log('Online');
 });
-
-/**
- *   const { email, password } = req.body;
-  switch (email && password) {
-    case !email:
-      return res.status(400).json({ message: 'O campo "email" é obrigatório' });
-    case !email.includes('@', '.com'):
-      return res.status(400).json({ message: 'O "email" deve ter o formato "email@email.com"' });
-    case !password: 
-      return res.status(400).json({ message: 'O campo "password" é obrigatório' });
-    case password.length < 6:
-      return 
-    default:
-      breae23e23k;
-
-      const { id } = req.params;
-    // const { name, age, talk: { watchedAt, rate } } = req.body;
-    // fs.readFile(PATHTALKER).then(async (resp) => {
-    //   const talkers = JSON.parse(resp);
-    //   const talkObj = {
-    //     name, age, talk: { watchedAt, rate },
-    //   };
-    //   const findTalkerIndex = talkers.findIndex((talk) => talk.id === +id);
-    //   talkers[findTalkerIndex] = { id: +id, ...talkObj };
-    //   await fs.writeFile(PATHTALKER, talkers);
-    //   return res.status(200).json(talkers[findTalkerIndex]);
-   
- */
