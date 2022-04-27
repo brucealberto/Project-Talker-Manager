@@ -38,7 +38,6 @@ app.get('/talker/search', authorizationMddl, async (req, res) => {
   const readTalkers = JSON.parse(await fs.readFile(PATHTALKER));
   if (!q) return res.status(200).json(readTalkers);
   const filterTalkers = readTalkers.filter((fil) => fil.name.includes(q));
-  if (!filterTalkers) return res.status(200).json([]);
   return res.status(200).json(filterTalkers); 
 });
 
